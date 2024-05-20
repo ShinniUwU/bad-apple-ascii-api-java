@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+</head>
+<style>
+    body {
+        background-color: black;
+        color:white;
+    }
+</style>
+<body>
+    <div id="ascii-art"></div>
+
+    <script>
+        // Function to fetch and display ASCII art
+        function fetchAndDisplayAsciiArt(frameNumber) {
+            fetchCachedAsciiArt(frameNumber)
+                .then(asciiArt => {
+                    updateAsciiArt(asciiArt);
+                })
+                .catch(error => console.error('Error fetching ASCII art:', error));
+        }
+
+        // Function to fetch cached ASCII art or fetch from server if not cached
+        function fetchCachedAsciiArt(frameNumber) {
+            const cacheKey = `frame_${frameNumber}`;
+            const cachedArt = localStorage.getItem(cacheKey);
+            if (cachedArt) {
+                return Promise.resolve(cachedArt);
+            } else {
+                return fetch(`http://localhost:8080/play/${frameNumber}`)
+                    .then(response => response.text())
+                    .then(asciiArt => {
+                        localStorage.setItem(cacheKey, asciiArt); // Cache the fetched ASCII art
+                        return asciiArt;
+                    });
+            }
+        }
+
+        // Function to update the ASCII art container
+        function updateAsciiArt(asciiArt) {
+            const asciiArtContainer = document.getElementById('ascii-art');
+            if (asciiArtContainer.innerText !== asciiArt) {
+                asciiArtContainer.innerText = asciiArt; // Update only if ASCII art has changed
+            }
+        }
+
+        // Fetch and update ASCII art periodically
+        let frameNumber = 42;
+        const interval = 100; // Update every 1 second (adjust as needed)
+        setInterval(() => {
+            fetchAndDisplayAsciiArt(frameNumber);
+            frameNumber++;
+        }, interval);
+    </script>
+</body>
+</html>
